@@ -3,6 +3,7 @@ package restx;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,8 +26,16 @@ public class RestExample {
 
     static class ThingsListHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response = "Many things: " + things.getThingCount().toString();
-            t.sendResponseHeaders(200, response.length());
+            //String response = "Many things: " + things.getThingCount().toString();
+            String response;
+            Integer responseCode = 200;
+            try {
+                response = things.toJsonString();
+            } catch (JSONException e) {
+                response = "JSON Exception: " + e.getMessage();
+                responseCode = 500;
+            }
+            t.sendResponseHeaders(responseCode, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -35,8 +44,17 @@ public class RestExample {
 
     static class ThingCreateHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            t.sendResponseHeaders(200, response.length());
+            String response;
+            Integer responseCode;
+            things.addThing(new Thing());
+            try {
+                response = things.toJsonString();
+                responseCode = 200;
+            } catch (JSONException e) {
+                response = "JSON Exception";
+                responseCode = 500;
+            }
+            t.sendResponseHeaders(responseCode, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();

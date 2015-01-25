@@ -14,8 +14,11 @@ public class RestExample {
     private static ThingList things = new ThingList();
     private static ThingsCRUD crud = new ThingsCRUD(things);
 
+    public final static Integer defaultPortNumber = 9001;
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        Integer portNumber = defaultPortNumber;
+        System.out.format("Starting REST example on localhost port %d...\n", portNumber);
+        HttpServer server = HttpServer.create(new InetSocketAddress(portNumber), 0);
         server.createContext("/things/list", new ThingsListHandler());
         server.createContext("/things/create", new ThingCreateHandler());
         server.createContext("/things/read", new ThingReadHandler());
@@ -30,7 +33,7 @@ public class RestExample {
             String response;
             Integer responseCode = 200;
             try {
-                response = crud.doList().toString();
+                response = crud.doList().toString() + "\n";
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();
                 responseCode = 500;
@@ -49,7 +52,7 @@ public class RestExample {
             Thing tempThing = new Thing();
             tempThing.setName("temp name");
             try {
-                response = crud.doCreate(tempThing).toString();
+                response = crud.doCreate(tempThing).toString() + "\n";
                 responseCode = 200;
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();
@@ -67,7 +70,7 @@ public class RestExample {
             String response;
             Integer responseCode;
             try {
-                response = crud.doRead(1).toString();
+                response = crud.doRead(1).toString() + "\n";
                 responseCode = 200;
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();
@@ -85,7 +88,7 @@ public class RestExample {
             String response;
             Integer responseCode;
             try {
-                response = crud.doUpdate(1, "new name", null).toString();
+                response = crud.doUpdate(1, "new name", null).toString() + "\n";
                 responseCode = 200;
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();
@@ -103,7 +106,7 @@ public class RestExample {
             String response;
             Integer responseCode = 404;
             try {
-                response = crud.doDelete(1).toString();
+                response = crud.doDelete(1).toString() + "\n";
                 responseCode = 200;
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();

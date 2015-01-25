@@ -25,10 +25,25 @@ public class ThingList {
         things.add(thing);
     }
 
+    public Boolean deleteThing(Integer id) {
+        Thing thing = findThingById(id);
+        if (thing != null) {
+            getThings().remove(thing);
+            return true;
+        } else return false;
+    }
+
     public Integer getThingCount() {
         return getThings().size();
     }
 
+    public Thing findThingById(Integer id) {
+        for (Thing thing : getThings()) {
+            if (thing.getId().equals(id))
+                return thing;
+        }
+        return null;
+    }
 
     public JSONArray toJsonArray() throws JSONException {
         JSONArray thingsJson = new JSONArray();
@@ -39,8 +54,15 @@ public class ThingList {
         return thingsJson;
     }
 
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject thingsJson = new JSONObject();
+        thingsJson.put("count", getThingCount());
+        thingsJson.put("things", toJsonArray());
+        return thingsJson;
+    }
+
     public String toJsonString() throws JSONException {
-        String jsonString = toJsonArray().toString();
+        String jsonString = toJsonObject().toString();
         return jsonString;
     }
 

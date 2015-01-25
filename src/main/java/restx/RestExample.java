@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 public class RestExample {
 
     private static ThingList things = new ThingList();
+    private static ThingsCRUD crud = new ThingsCRUD(things);
 
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
@@ -26,11 +27,10 @@ public class RestExample {
 
     static class ThingsListHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            //String response = "Many things: " + things.getThingCount().toString();
             String response;
             Integer responseCode = 200;
             try {
-                response = things.toJsonString();
+                response = crud.doList().toString();
             } catch (JSONException e) {
                 response = "JSON Exception: " + e.getMessage();
                 responseCode = 500;
@@ -46,12 +46,13 @@ public class RestExample {
         public void handle(HttpExchange t) throws IOException {
             String response;
             Integer responseCode;
-            things.addThing(new Thing());
+            Thing tempThing = new Thing();
+            tempThing.setName("temp name");
             try {
-                response = things.toJsonString();
+                response = crud.doCreate(tempThing).toString();
                 responseCode = 200;
             } catch (JSONException e) {
-                response = "JSON Exception";
+                response = "JSON Exception: " + e.getMessage();
                 responseCode = 500;
             }
             t.sendResponseHeaders(responseCode, response.length());
@@ -63,8 +64,16 @@ public class RestExample {
 
     static class ThingReadHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            t.sendResponseHeaders(200, response.length());
+            String response;
+            Integer responseCode;
+            try {
+                response = crud.doRead(1).toString();
+                responseCode = 200;
+            } catch (JSONException e) {
+                response = "JSON Exception: " + e.getMessage();
+                responseCode = 500;
+            }
+            t.sendResponseHeaders(responseCode, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -73,8 +82,16 @@ public class RestExample {
 
     static class ThingUpdateHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            t.sendResponseHeaders(200, response.length());
+            String response;
+            Integer responseCode;
+            try {
+                response = crud.doUpdate(1, "new name", null).toString();
+                responseCode = 200;
+            } catch (JSONException e) {
+                response = "JSON Exception: " + e.getMessage();
+                responseCode = 500;
+            }
+            t.sendResponseHeaders(responseCode, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -83,8 +100,16 @@ public class RestExample {
 
     static class ThingDeleteHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            t.sendResponseHeaders(200, response.length());
+            String response;
+            Integer responseCode = 404;
+            try {
+                response = crud.doDelete(1).toString();
+                responseCode = 200;
+            } catch (JSONException e) {
+                response = "JSON Exception: " + e.getMessage();
+                responseCode = 500;
+            }
+            t.sendResponseHeaders(responseCode, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();

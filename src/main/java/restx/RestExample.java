@@ -3,7 +3,7 @@ package restx;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,95 +28,56 @@ public class RestExample {
         server.start();
     }
 
-    static class ThingsListHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            String response;
-            Integer responseCode = 200;
-            try {
-                response = crud.doList().toString() + "\n";
-            } catch (JSONException e) {
-                response = "JSON Exception: " + e.getMessage();
-                responseCode = 500;
-            }
-            t.sendResponseHeaders(responseCode, response.length());
+    private static void handlerHelper(HttpExchange t, String response) {
+        try {
+            t.sendResponseHeaders(200, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();
+        } catch (IOException e) {
         }
+    }
+
+    private void handlerHelper(HttpExchange t, JSONObject response) {
+        handlerHelper(t, response.toString() + "\n");
+    }
+
+    static class ThingsListHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {
+            ThingResponseStatus response = crud.doList();
+            RestExample.handlerHelper(t, response.toJsonString());
+         }
     }
 
     static class ThingCreateHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response;
-            Integer responseCode;
-            Thing tempThing = new Thing();
-            tempThing.setName("temp name");
-            try {
-                response = crud.doCreate(tempThing).toString() + "\n";
-                responseCode = 200;
-            } catch (JSONException e) {
-                response = "JSON Exception: " + e.getMessage();
-                responseCode = 500;
-            }
-            t.sendResponseHeaders(responseCode, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            Thing tempThing = new Thing("temp name", null); // TODO: get parameters
+            ThingResponseStatus response = crud.doCreate(tempThing);
+            RestExample.handlerHelper(t, response.toJsonString());
         }
     }
 
     static class ThingReadHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response;
-            Integer responseCode;
-            try {
-                response = crud.doRead(1).toString() + "\n";
-                responseCode = 200;
-            } catch (JSONException e) {
-                response = "JSON Exception: " + e.getMessage();
-                responseCode = 500;
-            }
-            t.sendResponseHeaders(responseCode, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            Integer id = 1; // TODO: get parameters
+            ThingResponseStatus response = crud.doRead(id);
+            RestExample.handlerHelper(t, response.toJsonString());
         }
     }
 
     static class ThingUpdateHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response;
-            Integer responseCode;
-            try {
-                response = crud.doUpdate(1, "new name", null).toString() + "\n";
-                responseCode = 200;
-            } catch (JSONException e) {
-                response = "JSON Exception: " + e.getMessage();
-                responseCode = 500;
-            }
-            t.sendResponseHeaders(responseCode, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            Integer id = 1; // TODO: get parameters
+            ThingResponseStatus response = crud.doUpdate(id, "new name", null);
+            RestExample.handlerHelper(t, response.toJsonString());
         }
     }
 
     static class ThingDeleteHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String response;
-            Integer responseCode = 404;
-            try {
-                response = crud.doDelete(1).toString() + "\n";
-                responseCode = 200;
-            } catch (JSONException e) {
-                response = "JSON Exception: " + e.getMessage();
-                responseCode = 500;
-            }
-            t.sendResponseHeaders(responseCode, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            Integer id = 1;
+            ThingResponseStatus response = crud.doDelete(id);
+            RestExample.handlerHelper(t, response.toJsonString());
         }
     }
-
 }

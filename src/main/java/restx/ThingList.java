@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by kmc on 1/24/15.
  */
-public class ThingList {
+public class ThingList implements ThingApiInterface {
     private List<Thing> getThings() {
         return things;
     }
@@ -45,7 +45,7 @@ public class ThingList {
         return null;
     }
 
-    public JSONArray toJsonArray() throws JSONException {
+    public JSONArray toJsonArray() {
         JSONArray thingsJson = new JSONArray();
         for (Thing thing : getThings()) {
             JSONObject thingJson = thing.toJsonObject();
@@ -54,16 +54,23 @@ public class ThingList {
         return thingsJson;
     }
 
-    public JSONObject toJsonObject() throws JSONException {
+    public JSONObject toJsonObject() {
         JSONObject thingsJson = new JSONObject();
-        thingsJson.put("count", getThingCount());
-        thingsJson.put("things", toJsonArray());
-        return thingsJson;
+        try {
+            thingsJson.put("count", getThingCount());
+            thingsJson.put("things", toJsonArray());
+            return thingsJson;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public String toJsonString() throws JSONException {
-        String jsonString = toJsonObject().toString();
-        return jsonString;
+    public String toJsonString() {
+        JSONObject thingJson = toJsonObject();
+        if (thingJson != null) {
+            return thingJson.toString();
+        } else return null;
     }
 
 }

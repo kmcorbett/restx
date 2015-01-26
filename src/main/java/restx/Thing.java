@@ -8,17 +8,26 @@ import java.util.Date;
 /**
  * Created by kmc on 1/24/15.
  */
-public class Thing {
+public class Thing implements ThingApiInterface {
 
-    public JSONObject toJsonObject() throws JSONException {
+    public JSONObject toJsonObject() {
         JSONObject thingJson = new JSONObject();
-        thingJson.put("id", getId().toString());
-        thingJson.put("name", getName());
-        thingJson.put("date", "<unknown>");
-        return thingJson;
+        try {
+            thingJson.put("id", getId().toString());
+            thingJson.put("name", getName());
+            thingJson.put("date", "<unknown>");
+            return thingJson;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
-    public String toJsonString() throws JSONException {
-        return toJsonObject().toString();
+
+    public String toJsonString() {
+        JSONObject thingJson = toJsonObject();
+        if (thingJson != null) {
+            return thingJson.toString();
+        } else return null;
     }
 
     private static Integer nextId = 0;
@@ -30,6 +39,12 @@ public class Thing {
         this.id = nextId++;
         this.name = "<unknown>";
         this.createDate = new Date();
+    }
+
+    public Thing(String name, Date date) {
+        this.id = nextId++;
+        this.name = name;
+        this.createDate = date;
     }
 
     public String getName() {

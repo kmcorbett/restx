@@ -1,14 +1,24 @@
 package restx;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+import restx.ThingResponseStatus.ThingResponseStatusCode;
 
 import java.util.Date;
 
 /**
  * Created by kmc on 1/24/15.
  */
-public class ThingsCRUD {
+public class ThingsCRUD implements ThingApiInterface {
+    @Override
+    public String toJsonString() {
+        return null;
+    }
+
+    @Override
+    public JSONObject toJsonObject() {
+        return null;
+    }
+
     public enum ThingsCRUDop {
         LIST, CREATE, READ, UPDATE, DELETE;
     }
@@ -27,59 +37,39 @@ public class ThingsCRUD {
         this.things = things;
     }
 
-    public JSONObject doList() throws JSONException {
-        return getThings().toJsonObject();
+    // CRUD methods
+
+    public ThingResponseStatus doList() {
+        return new ThingResponseStatus(ThingResponseStatusCode.OK);
     }
 
-    public JSONObject doCreate(Thing thing) throws JSONException {
+    public ThingResponseStatus doCreate() {
+        return doCreate(new Thing());
+    }
+
+    public ThingResponseStatus doCreate(Thing thing) {
         getThings().addThing(thing);
-        return makeStatusJSON(true);
+        return new ThingResponseStatus(ThingResponseStatusCode.CREATED);
     }
 
-    public JSONObject doRead(Integer id) throws JSONException {
+    public ThingResponseStatus doRead(Integer id) {
         Thing thing = getThings().findThingById(id);
         if (thing != null) {
-            return mergeStatusJSON(thing, true);
-        } else return makeStatusJSON(false);
+            return new ThingResponseStatus(ThingResponseStatusCode.OK);
+        } else return new ThingResponseStatus(ThingResponseStatusCode.NOT_FOUND);
     }
 
-    public JSONObject doUpdate(Integer id, String name, Date createDate) throws JSONException {
+    public ThingResponseStatus doUpdate(Integer id, String name, Date createDate) {
         Thing thing = getThings().findThingById(id);
         if (thing != null) {
             if (name != null) thing.setName(name);
             if (createDate != null) thing.setCreateDate(createDate);
-            return mergeStatusJSON(thing, true);
-        } else return makeStatusJSON(false);
+            return new ThingResponseStatus(ThingResponseStatusCode.OK);
+        } else return new ThingResponseStatus(ThingResponseStatusCode.NOT_FOUND);
     }
 
-    public JSONObject doDelete(Integer id) throws JSONException {
-        return makeStatusJSON(getThings().deleteThing(id));
+    public ThingResponseStatus doDelete(Integer id) {
+        return new ThingResponseStatus(getThings().deleteThing(id));
     }
 
-    // JSON representation success or failure status of CRUD operation
-
-    protected static String successFlagValue = "0";
-    protected static String failureFlagValue = "-1";
-
-    protected JSONObject mergeStatusJSON(JSONObject jsonObj, Boolean successFlag) throws JSONException {
-        jsonObj.put("status", successFlag ? successFlagValue : failureFlagValue);
-        return jsonObj;
-    }
-
-    protected JSONObject mergeStatusJSON(Thing thing, Boolean successFlag) throws JSONException {
-        JSONObject status = thing.toJsonObject();
-        return mergeStatusJSON(status, successFlag);
-    }
-
-    protected JSONObject makeStatusJSON(Boolean successFlag) throws JSONException {
-        JSONObject status = new JSONObject();
-        status.put("status", successFlag ? successFlagValue : failureFlagValue);
-        return status;
-    }
-
-    protected JSONObject makeStatusJSON(Boolean successFlag, Thing thing) throws JSONException {
-        JSONObject statusJSON = makeStatusJSON(successFlag);
-        statusJSON.put("thing", thing.toJsonString());
-        return statusJSON;
-    }
 }
